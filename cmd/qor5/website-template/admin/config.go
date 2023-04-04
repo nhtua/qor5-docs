@@ -87,12 +87,13 @@ func newPB() Config {
 
 	utils.Configure(b)
 	media_view.Configure(b, db)
+	ab := activity.New(b, db).SetCreatorContextKey(login.UserKey)
+	
 	pageBuilder := example.ConfigPageBuilder(db, "/admin/page_builder", ``, b.I18n())
-	pm := pageBuilder.Configure(b, db)
+	pm := pageBuilder.Configure(b, db, l10nBuilder, ab)
 	tm := pageBuilder.ConfigTemplate(b, db)
 	cm := pageBuilder.ConfigCategory(b, db)
-
-	ab := activity.New(b, db).SetCreatorContextKey(login.UserKey)
+	
 	ab.RegisterModels(pm, tm, cm)
 
 	storage := filesystem.New(PublishDir)
@@ -103,8 +104,8 @@ func newPB() Config {
 	l10nBuilder.
 		RegisterLocales(countries.International, "International", "International").
 		RegisterLocales(countries.China, "China", "China").
-		GetSupportLocalesFromRequestFunc(func(R *http.Request) []countries.CountryCode {
-			return l10nBuilder.GetSupportLocales()[:]
+		GetSupportLocalesFromRequestFunc(func(R *http.Request) []string {
+			return l10nBuilder.GetSupportLocaleCodes()[:]
 		})
 	l10n_view.Configure(b, db, l10nBuilder, ab, pm)
 
